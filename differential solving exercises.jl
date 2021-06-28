@@ -60,10 +60,19 @@ end
 
 W = WienerProcess(0.0, 0.0, 0.0) # DW terms are all Brownian Motion
 
-# Solve and plot
+# Solve and plot the SDE
 prob_sde_orgenator = SDEProblem(oregenator, g_oregantor, initial_values, (0.0, 360.0), noise = W, p)
-sol = solve(prob_sde_orgenator, SOSRI())
-plot(sol)
+orgenator_sol = solve(prob_sde_orgenator, SOSRI())
+plot(orgenator_sol)
+
+# Run 100 trajectories on the SDE (like simulating 100 times with varying randomness)
+orgenator_ensemble = EnsembleProblem(prob_sde_orgenator)
+orgenator_sim = solve(ensemble, trajectories = 100, ImplicitRKMil(), EnsembleThreads(), saveat = 1.0)
+plot(orgeneator_sim)
+
+# Ensemble summary of the 100 trajectories
+ensemble_summ = EnsembleSummary(sim, 0.0:1.0:360.0)
+plot(ensemble_summ)
 
 
 
@@ -92,11 +101,22 @@ u0 = 1.0 # initial value ($1 BTC)
 tspan = (0.0, 10.0) # time span
 
 # ODE/linear growth
-prob = ODEProblem(f, u0, tspan)
-sol = solve(prob, AutoVern7(Rodas5()), saveat = 1.0)
-plot(sol)
+ode_prob = ODEProblem(f, u0, tspan)
+ode_sol = solve(prob, AutoVern7(Rodas5()), saveat = 1.0)
+plot(ode_sol, m = :o)
 
 # SDE/random growth + loss
-prob = SDEProblem(f, g, u0, tspan, noise = W)
-sol = solve(prob, SOSRI(), saveat = 1.0)
-plot(sol)
+# - Save each year's result
+sde_prob = SDEProblem(f, g, u0, tspan, noise = W)
+sde_sol = solve(prob, SOSRI(), saveat = 1.0)
+plot(sde_sol)
+
+# SDE with monte carlo like simulation
+# - Run 100 trajectories i.e. see the potentialprice in each year with varying randomness
+ensemble = EnsembleProblem(sde_prob)
+sim = solve(ensemble, trajectories = 100, ImplicitRKMil(), EnsembleThreads(), saveat = 1.0)
+plot(sim)
+
+# Ensemble summary (take mean at each 1.0 time step)
+ensemble_summ = EnsembleSummary(sim, 0.0:1.0:10.0)
+plot(ensemble_summ)

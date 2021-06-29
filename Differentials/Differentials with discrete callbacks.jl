@@ -3,8 +3,9 @@ using Plots
 
 # ODE equations
 function f(du, u, p, t)
-    du[1] = -p[1] * u[1]
-    du[2] = (p[1] * u[1]) - (p[2] * u[2])
+    Kₐ, Kₑ = p
+    du[1] = -Kₐ * u[1]
+    du[2] = (Kₐ * u[1]) - (Kₑ * u[2])
 end
 
 # Setup functions for DiscreteCallback
@@ -28,7 +29,7 @@ end
 cb = DiscreteCallback(condition, affect!)
 
 u0 = [100.0, 0.0] # initial conditions
-p = [2.268, 0.07398] # parameters
+p = [2.268, 0.07398] # parameters (Kₐ, Kₑ)
 tspan = (0.0, 90.0) # time span
 
 # Declare the ODE and solve with the callback
